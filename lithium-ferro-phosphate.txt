@@ -1,0 +1,583 @@
+#include<mwc_stepper.h>
+
+// Y axis (motor)
+#define EN_PIN 22
+#define DIR_PIN 24
+#define STEP_PIN 26
+#define RELAY_PIN 34
+#define SW_PIN 44
+
+// X axis (m2)
+#define EN_PIN2 28
+#define DIR_PIN2 30
+#define STEP_PIN2 32
+#define RELAY_PIN2 36
+#define SW_PIN2 46
+
+#define RPIN2 40 // spot (RELAY ON OFF)
+#define RPIN  38// set weld (RELAY ON OFF)
+
+#define pSW   42 // pnuematics (SWITCH)
+#define Pause 48 // Pause (SWITCH)
+#define kill  3 //kill light
+
+#define RPM 150
+#define RPM1 150
+#define on 2 //on light
+
+int x;
+int y;
+int j=0;
+
+#define PULSE 400
+#define pu 1600
+#define forward 1
+#define backward 0
+
+int t=0;
+int k;
+
+MWCSTEPPER motor(EN_PIN2, DIR_PIN2, STEP_PIN2); // Y AXIS
+MWCSTEPPER m2(EN_PIN, DIR_PIN, STEP_PIN); // X AXIS
+
+void setup() {
+
+  motor.init();
+  m2.init();
+  Serial.begin(9600);
+  pinMode(SW_PIN,INPUT);
+  pinMode(SW_PIN2,INPUT);  
+  pinMode(RELAY_PIN,OUTPUT);
+  pinMode(RELAY_PIN2,OUTPUT);
+  pinMode(RPIN2,OUTPUT);
+  pinMode(pSW,INPUT);
+  pinMode(RPIN,OUTPUT);
+  pinMode(Pause,INPUT);
+  pinMode(on,OUTPUT);
+  pinMode(kill,OUTPUT);
+
+  digitalWrite(RELAY_PIN,HIGH);
+  digitalWrite(RELAY_PIN2,HIGH);
+  digitalWrite(RPIN2,HIGH);
+  digitalWrite(RPIN,LOW);
+  Serial.println("how many columns? : ");
+  while(Serial.available()==0){}
+  x=Serial.parseInt();
+  Serial.println("how many rows? : ");
+  while(Serial.available()==0){}
+  y=Serial.parseInt();
+   Serial.println("how many rows? : ");
+  while(Serial.available()==0){}
+  y=Serial.parseInt();
+  
+  
+
+      }
+
+  
+void move_50 (){
+    digitalWrite(RELAY_PIN2,LOW);
+    m2.set(forward,150,400);
+    for(int i=0;i<2800;i++){
+      pause();
+      m2.run();
+                            }
+               }
+
+void pause(){
+    if (digitalRead(Pause) == LOW) {
+      digitalWrite(kill,HIGH);
+      
+   
+    while (digitalRead(Pause) == LOW) {
+                                       }
+                                    }
+                                    digitalWrite(kill,LOW);  
+                                      
+            }
+
+void loop() {
+
+  
+
+  int j =0;
+  int o = digitalRead(SW_PIN);
+
+// Y AXIS HOME POSITION
+pause();
+  digitalWrite(RELAY_PIN,LOW);
+  motor.set(backward,RPM,PULSE);
+  digitalWrite(2,LOW);
+  motor.run();
+
+while(o==HIGH){
+
+  digitalWrite(RELAY_PIN,HIGH);
+  int p=digitalRead(SW_PIN2);
+
+// X AXIS HOME POSITION
+  pause();
+  digitalWrite(RELAY_PIN2,LOW);
+  m2.set(backward,RPM,PULSE);
+  m2.run();
+  
+while (p==HIGH){
+  
+  digitalWrite(RELAY_PIN2,HIGH);
+  delay(2000);
+  
+    
+for (int r=0;r<y;r++){       
+   
+      int l=(r%2);
+
+if(l==0){             // FORWARD LOOP
+          int j=0;
+          delay(1000);
+
+ do{
+      
+    int pn=digitalRead(pSW);
+
+    if(pn==HIGH){
+               move_50();
+               j=1;
+                }
+                  
+    else{
+        int i=0;
+        int m=0;
+        do{ 
+          int pn=digitalRead(pSW);
+
+       if(i>=1){
+         digitalWrite(RPIN,HIGH);
+               }
+      
+        delay(500);
+        pause();
+        digitalWrite(RPIN2,LOW);
+        delay(1000);                //spot
+        digitalWrite(RPIN2,HIGH);
+        delay(500);
+
+        int z=digitalRead(pSW);        
+        if(z==HIGH){
+           m=1;
+        }
+        i++;                    
+          }
+        while(m==0);
+        j=0;
+         }
+   }
+while(j==0);
+
+    digitalWrite(RPIN,LOW);
+    digitalWrite(RELAY_PIN2, HIGH);
+    
+    delay(500);
+    pause();    
+    digitalWrite(RPIN2,LOW);
+    delay(1000);               //spot
+    digitalWrite(RPIN2,HIGH);
+    delay(500);
+    
+    digitalWrite(RELAY_PIN,LOW);
+    motor.set(forward, RPM, PULSE);
+        
+for(int n=0;n<x;n++) {                  //y-axis forward loop
+          
+  do{
+              
+    int pn=digitalRead(pSW);
+      
+    if(pn==HIGH){
+        
+      for (int i = 0; i < 520; i++){
+               motor.set(forward,RPM,PULSE);
+               pause();
+               motor.run();   
+                                   }            
+                                   
+                j=1;               
+                }
+    else{
+        int i=0;
+        int m=0;
+      do{
+          int pn=digitalRead(pSW);
+
+        if(i>=1){
+         digitalWrite(RPIN,HIGH);
+                }
+      
+        delay(500);
+        pause();
+        digitalWrite(RPIN2,LOW);
+        delay(1000);                       //spot
+        digitalWrite(RPIN2,HIGH);
+        delay(500);
+
+        int z=digitalRead(pSW);        
+        if(z==HIGH){
+                m=1;
+                   }
+        i++;                    
+        }
+        while(m==0);
+        }
+      }
+while(j==0);  
+
+          digitalWrite(RPIN,LOW);
+          delay(500);
+          pause();
+          digitalWrite(RPIN2,LOW);  //spot
+          delay(1500);
+          digitalWrite(RPIN2,HIGH);
+          delay(500);
+
+
+          
+do{
+      int pn=digitalRead(pSW);
+      if(pn==HIGH){
+      
+        for (int k=0;k<2400;k++){
+               motor.set(forward,RPM,PULSE);
+               pause();
+               motor.run();
+                                }
+               j=1;
+                   }
+      else{
+        
+        int i=0;
+        int m=0;
+        do{
+          int pn=digitalRead(pSW);
+
+       if(i>=1){
+         digitalWrite(RPIN,HIGH);
+               }
+      
+        delay(500);
+        pause();
+        digitalWrite(RPIN2,LOW);
+        delay(1000);                       //spot
+        digitalWrite(RPIN2,HIGH);
+        delay(500);
+
+        int z=digitalRead(pSW);        
+        if(z==HIGH){
+             m=1;
+                   }
+        i++;                    
+          }
+        while(m==0);
+        
+        j=0;
+           }
+  } 
+while(j==0); 
+ 
+digitalWrite(RPIN,LOW);
+
+          delay(500);
+          pause();
+          digitalWrite(RPIN2,LOW);  //spot
+          delay(1500);
+          digitalWrite(RPIN2,HIGH);
+          delay(500);
+
+                      
+        }
+      
+
+        motor.set(forward, RPM, PULSE);
+        
+ // y-axis last 5mm spot
+          
+do{
+      int pn=digitalRead(pSW);
+      if(pn==HIGH){
+        
+        for (int h = 0; h < 520; h++){
+              motor.set(forward,RPM,PULSE);
+              pause();
+              motor.run();
+                                     }
+                 j=1;
+                  }
+              
+       else{
+        
+        int i=0;
+        int m=0;
+        do{
+          int pn=digitalRead(pSW);
+
+       if(i>=1){
+         digitalWrite(RPIN,HIGH);
+               }
+      
+        delay(500);
+        pause();
+        digitalWrite(RPIN2,LOW);
+        delay(1000);                       //spot
+        digitalWrite(RPIN2,HIGH);
+        delay(500);
+
+        int z=digitalRead(pSW);        
+      if(z==HIGH){
+           m=1;
+                 }
+        i++;                    
+          }
+        while(m==0);
+        j=0;
+       
+        }
+    }
+while(j==0);  
+          
+          digitalWrite(RPIN,LOW);
+
+          delay(500);
+          pause();
+          digitalWrite(RPIN2,LOW);  //spot
+          delay(1500);
+          digitalWrite(RPIN2,HIGH);
+          delay(500);
+
+      }
+
+//BACKWARD LOOP
+if(l!=0){
+
+   motor.set(backward, RPM1, PULSE); 
+
+   do{
+ 
+      int pn=digitalRead(pSW);
+
+      if(pn==HIGH){
+               move_50();
+               j=1;
+                  }
+
+      else{
+        
+        int i=0;
+        int m=0;
+
+        do{
+          int pn=digitalRead(pSW);
+
+       if(i>=1){
+         digitalWrite(RPIN,HIGH);
+               }
+      
+        delay(500);
+        pause();
+        digitalWrite(RPIN2,LOW);
+        delay(1000);                       //spot
+        digitalWrite(RPIN2,HIGH);
+        delay(500);
+
+        int z=digitalRead(pSW);        
+        if(z==HIGH){
+           m=1;
+                   }
+        i++;                    
+          }
+        while(m==0);
+        
+        j=0;
+         }
+    }
+while(j==0); 
+
+digitalWrite(RPIN,LOW);
+    
+    delay(500);
+    pause();
+    digitalWrite(RPIN2,LOW);
+    delay(1000);                       //spot
+    digitalWrite(RPIN2,HIGH);
+    delay(500);
+
+        
+ for(int n=0;n<x;n++){                 //y-axis BACKWARD LOOP
+
+    do{
+                
+      int pn=digitalRead(pSW);
+      if(pn==HIGH){
+        
+        for (int i = 0; i < 520; i++){
+               motor.set(backward,RPM,PULSE);
+               pause();
+               motor.run();   
+                                     }            
+                  j=1;               
+                  }
+     
+      else{
+        
+        int i=0;
+        int m=0;
+        do{
+          int pn=digitalRead(pSW);
+
+       if(i>=1){
+         digitalWrite(RPIN,HIGH);
+               }
+      
+        delay(500);
+        pause();
+        digitalWrite(RPIN2,LOW);
+        delay(1000);                       //spot
+        digitalWrite(RPIN2,HIGH);
+        delay(500);
+        
+        int z=digitalRead(pSW);        
+        if(z==HIGH){
+           m=1;
+                   }
+        i++;                    
+        }
+        while(m==0);
+        
+        j=0;
+         }
+    }
+while(j==0); 
+
+digitalWrite(RPIN,LOW);
+            
+            delay(500);
+            pause();
+            digitalWrite(RPIN2,LOW);  //spot
+            delay(1500);
+            digitalWrite(RPIN2,HIGH);
+            delay(500);  
+
+ do{
+               
+      int pn=digitalRead(pSW);
+      if(pn==HIGH){
+        
+        for (int k=0;k<2400;k++){
+               motor.set(backward,RPM,PULSE);
+               pause();
+               motor.run();  
+                                }                            
+                   j=1;               
+                  }
+      
+      else{
+       
+        int i=0;
+        int m=0;
+        do{
+          int pn=digitalRead(pSW);
+
+       if(i>=1){
+         digitalWrite(RPIN,HIGH);
+                }
+      
+        delay(500);
+        pause();
+        digitalWrite(RPIN2,LOW);
+        delay(1000);                       //spot
+        digitalWrite(RPIN2,HIGH);
+        delay(500);
+
+        int z=digitalRead(pSW);        
+        if(z==HIGH){
+           m=1;
+                   }
+        i++;                    
+           }
+        while(m==0);
+        
+        j=0; 
+           }
+    }
+while(j==0); 
+
+digitalWrite(RPIN,LOW);
+            
+            delay(500);
+            pause();
+            digitalWrite(RPIN2,LOW);  //spot
+            delay(1500);
+            digitalWrite(RPIN2,HIGH); 
+            delay(500);
+
+            
+        }
+
+  do{
+       
+      int pn=digitalRead(pSW);
+      if(pn==HIGH){
+       
+        for (int h = 0; h < 520; h++){
+               motor.set(backward,RPM,PULSE);
+               pause();
+               motor.run();               
+        }
+              j=1;               
+      }
+      else{
+        
+        int i=0;
+        int m=0;
+        do{
+          int pn=digitalRead(pSW);
+
+       if(i>=1){
+         digitalWrite(RPIN,HIGH);
+               }
+      
+        delay(500);
+        pause();
+        digitalWrite(RPIN2,LOW);
+        delay(1000);                       //spot
+        digitalWrite(RPIN2,HIGH);
+        delay(500);
+        
+        int z=digitalRead(pSW);        
+        if(z==HIGH){
+           m=1;
+                   }
+        i++;                    
+        }
+        while(m==0);
+        j=0;
+      }
+    }
+while(j==0);
+
+digitalWrite(RPIN,LOW);
+                
+              delay(500);
+              pause();
+              digitalWrite(RPIN2,LOW);
+              delay(1500);
+              digitalWrite(RPIN2,HIGH);
+              delay(500);
+              
+        }
+
+   
+                     }
+digitalWrite(2,HIGH);
+ exit(0);
+                   }
+
+                   }
+}
